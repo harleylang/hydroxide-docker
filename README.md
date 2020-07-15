@@ -1,10 +1,10 @@
 # Hydroxide Dockerfile
 
-This repository provides an example of how to setup a Dockerfile to run a protonmail email server with [hydroxide](https://github.com/emersion/hydroxide).
+This repository provides an example Dockerfile configuration for [hydroxide](https://github.com/emersion/hydroxide).
 
-Before submitting an issues, please see the [hydroxide](https://github.com/emersion/hydroxide) docs and [Protomail](https://protonmail.com/support/) support pages for hydroxide and Protonmail specific matters.
+Before submitting issues, please see the [hydroxide](https://github.com/emersion/hydroxide) docs and [Protomail](https://protonmail.com/support/) support pages for hydroxide and Protonmail specific matters.
 
-I offer no guarentees that this is a secure way to store and pass your hydroxide authentication information to other apps. It is one working example to get you started. If can improve the security of this setup, please send a pull request. 
+I offer no guarentees that this is a secure way to store and pass your hydroxide authentication information to other apps. It is one working example to get you started. If can improve the security of this example configuration, please send a pull request. 
 
 ## Data Flow
 
