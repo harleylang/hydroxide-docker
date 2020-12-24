@@ -8,52 +8,57 @@
 
 
 ################################################%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-###### Build Hydroxide	
+###### Build Hydroxide
 ################################################%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# builder OS
+# Builder OS
 FROM golang:1-alpine as builder
 
-# update / dependencies  
-RUN apk --update upgrade \
-&& apk --no-cache --no-progress add git make gcc musl-dev \
-&& rm -rf /var/cache/apk/*
+ARG HYDROXIDE_VERSION=0.2.17
+WORKDIR /src
 
-# docker container settings
-ENV GOPATH /go
-
-# build hydroxide
-RUN git -C ./src/ clone https://github.com/emersion/hydroxide/
-RUN go get -d ./src/hydroxide/cmd/hydroxide/...
-RUN cd /go/src/hydroxide/cmd/hydroxide && go build . && go install . && cd
-
+# Build Hydroxide binary, releases preferred for stability, source preferred for compatibility and security
+RUN wget -c https://github.com/emersion/hydroxide/releases/download/v${HYDROXIDE_VERSION}/hydroxide-${HYDROXIDE_VERSION}.tar.gz -qO - | tar -xz --strip 1 \
+    && go get -d ./cmd/hydroxide \
+    && go build -o hydroxide ./cmd/hydroxide
 
 ################################################%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###### Copy to container
 ################################################%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# container OS
-FROM alpine:3.9
+# TODO Consider authenticating and generating the accesstoken in the build phase? Would still mean baking the access token into the eventual image but would remove the password from ever being present
+
+# Container OS
+FROM alpine:3.9 as runner
+
+LABEL org.opencontainers.image.title="Docker Hydroxide"
+LABEL org.opencontainers.image.description="Containerised version of Hydroxide, the FOSS alternative to ProtonMail's Bridge application. Authenticates and exposes SMTP, IMAP, and CalDAV interfaces."
+LABEL org.opencontainers.image.version="0.2.17"
+LABEL org.opencontainers.image.authors=""
+LABEL org.opencontainers.image.source="https://github.com/harleylang/hydroxide-docker"
+
+# Persist storage of the access token generated on authentication
+# TODO Maybe not - this would mean that docker run commands without further qualification would stick the sensitive information in /var/lib/docker/volumes/ somewhere - which may be insecure out of the box. Probably better NOT to declare it here and to enforce a safe location by use of Docker-Compose or more explicit --volume arguments at run time.
+# Looks like it's clashing with my run-time source-destination mapping
+# VOLUME [ "~/.config/hydroxide" ]
+
+# SMTP IMAP CalDAV
+EXPOSE 1025 1143 8080
+
+WORKDIR /hydroxide
 
 USER root
 
-EXPOSE 1025
+# Create service principal objects
+RUN addgroup -S hydroxide && adduser -S hydroxide -G hydroxide
 
-# update / dependencies
-RUN apk --update upgrade \
-    && apk --no-cache add ca-certificates bash openrc \
-    && rm -rf /var/cache/apk/*
+# Copy Hydroxide and wrapper script
+COPY --from=builder /src/hydroxide .
+COPY ./start.sh .
 
-# email variables; either pass these from your docker-compose file OR uncomment and insert below
-#ENV HYDROXIDEUSER you@youremail.here
-#ENV HYDROXIDEPASS yourPasswordHere 
+RUN chown -R hydroxide:hydroxide /hydroxide 
 
-# copy hydroxide
-COPY --from=builder /go/bin/hydroxide /usr/bin/hydroxide
+USER hydroxide
 
-COPY ./start.sh start.sh
-
-WORKDIR /
-
-ENTRYPOINT ["/start.sh"] 
-
+# Pass the arguments explicitly for more robust chaining
+ENTRYPOINT [ "/bin/sh", "-c", "./start.sh ${USERNAME} ${PASSWORD} ${TOKEN}" ]

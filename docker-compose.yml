@@ -1,16 +1,24 @@
-version: '3.3'
+version: '3.5'
 
 services:
 
   hydroxide:
     build: hydroxide
+      context: .
+      args:
+        HYDROXIDE_VERSION: $HYDROXIDE_VERSION
     ports:
-     - 1025:1025
+      - 1025
+      - 1143
+      - 8080
     environment:
-      HYDROXIDEUSER: you@youremail.here
-      HYDROXIDEPASS: yourPasswordHere
+      USERNAME: $PROTONMAIL_LOGIN
+      PASSWORD: $PROTONMAIL_PASSWORD
+      TOKEN: $PROTONMAIL_EXTRA_2FA
+      DEBUG: $HYDROXIDE_DEBUG
+      INTERPOD: $HYDROXIDE_INTERPOD
     volumes:
-     - hydroxide-volume:/data
+     - /root/.config/hydroxide:/root/.config/hydroxide
 
 # add your service here that will integrate with hydroxide
 #

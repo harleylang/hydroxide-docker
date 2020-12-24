@@ -8,7 +8,7 @@ I offer no guarentees that this is a secure way to store and pass your hydroxide
 
 ## Data Flow
 
-In general, these docker-related files automate the Protonmail login process via hydroxide. To do this, your email and password are passed from the docker-related files (via environmental variables) and your authentication data is stroed in `/data/info.json`. 
+In general, these docker-related files automate the Protonmail login process via Hydroxide. To do this, your email and password (2FA optionally) are passed via environmental variables to the Docker runtime and your authentication data is stored in `~/.config/hydroxide/auth.json`. 
 
 ```
 info.json {
@@ -20,7 +20,7 @@ info.json {
 
 ```
 
-With the Dockerfile, other files on the host system  can access `info.json` to send emails by querying `/opt/hydroxide-container/data-hydroxide/info.json`.
+With the Dockerfile, other users on the host system may be able access `auth.json`. It is recommended that the Docker volume containing the secret be mounted to a secured location on the host, and that root and sudo access be limited.
 
 The `docker-compose` file is setup to share the info.json file via volume sharing.
 
@@ -28,55 +28,19 @@ The `docker-compose` file is setup to share the info.json file via volume sharin
 
 Below are some basic instructions to get you started.
 
-### Dockerfile only
+### Building the image
 
-If you require a Dockerfile, see the [Dockerfile](/Dockerfile) folder. If you are unfamiliar with Docker, here is some code to get you started.
+Image can be built by simply running `docker build .` in the root directory. It's suggested you nominate a `--tag` for convenient use.
 
-```
+### Running the image (stand-alone)
 
-# create folders where your hydroxide log file and auth tokens will live
-mkdir /opt/hydroxide-container
-mkdir /opt/hydroxide-container/data-hydroxide
+On first run the image requires your Protonmail logon, secret, and two factor authentication token. The parameters can be passed in by supplementing the `docker run` command with the environment options `-e USERNAME= -e PASSWORD= -e TOKEN=`. For convenience it's recommended that `/root/.config/hydroxide` in the container is mapped to a secured directory on the host machine, this ensures that the container will retain a copy of any access tokens it has created in the past, as well as prevent accidental or malicious access.
 
-# navigate to this repo by changing the directory
-cd /directory/path/to/this/repo
+### Running the image (docker-compose)
 
-# go to the Dockerfile directory
-cd ./hydroxide
-
-# you will need to edit the Dockerfile, here I chose vim as my text editor, use what you prefer
-vim Dockerfile 
-
-# while in vim, uncommment and update HYDROXIDEUSER and HYDROXIDEPASS vars to suit your needs
-# press the 'i' key to enter insert mode, make your changes, and press the 'esc' key when you are done
-# type ':wq' (without brackets) to save your changes and exit 
-
-# build the Dockerfile image
-docker build -t hydroxide .
-
-# run the Dockerfile image
-docker run -it -p 1025:1025 -v /opt/hydroxide-container/data-hydroxide:/data hydroxide
+If you require a `docker-compose` file, see [docker-compose.yml](docker-compose.yml). If you are unfamiliar with docker-compose, here is some code to get you started. Make sure to update the `.env` file with your personal values before your first run.
 
 ```
-
-### docker-compose
-
-If you require a `docker-compose` file, see [docker-compose.yml](docker-compose.yml). If you are unfamiliar with docker-compose, here is some code to get you started.
-
-```
-
-# navigate to this repo by changing the directory
-cd /directory/path/to/this/repo
-
-# you will need to edit docker-compose.yml, here I chose vim as my text editor, use what you prefer
-vim Dockerfile 
-
-# while in vim, update:
-# (1) HYDROXIDEUSER and HYDROXIDEPASS vars to suit your needs, and
-# (2) add services that you wish to link to the hydroxide server
-# press the 'i' key to enter insert mode, make your changes, and press the 'esc' key when you are done
-# type ':wq' (without brackets) to save your changes and exit 
-
 # spin container 
 docker-compose stop && docker-compose up -d --build 
 
@@ -103,6 +67,4 @@ vim send_mail.py
 # fire a test email
 python3 send_mail.py
 
-
 ```
-
