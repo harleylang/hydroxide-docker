@@ -11,7 +11,7 @@ I offer no guarentees that this is a secure way to store and pass your hydroxide
 In general, these docker-related files automate the Protonmail login process via Hydroxide. To do this, your email and password (2FA optionally) are passed via environmental variables to the Docker runtime and your authentication data is stored in `~/.config/hydroxide/auth.json`. 
 
 ```
-info.json {
+auth.json {
 
 	'user': 'you@yourwebsite.com',
 	'hash': 'yourhyDrOxIdEhaShHerE'
@@ -34,16 +34,27 @@ Image can be built by simply running `docker build .` in the root directory. It'
 
 ### Running the image (stand-alone)
 
-On first run the image requires your Protonmail logon, secret, and two factor authentication token. The parameters can be passed in by supplementing the `docker run` command with the environment options `-e USERNAME= -e PASSWORD= -e TOKEN=`. For convenience it's recommended that `/root/.config/hydroxide` in the container is mapped to a secured directory on the host machine, this ensures that the container will retain a copy of any access tokens it has created in the past, as well as prevent accidental or malicious access.
+On first run the image requires your Protonmail logon, password, and, if enabled two factor authentication token. The parameters can be passed in by supplementing the `docker run` command with the environment options `--env USERNAME= --env PASSWORD= --env TOKEN=`. In order for permissions to work your host machine must have (at minimum) a directory that allows write and read access for whatever user id (or group id) you launch the container as. Directory setup can be achieved with something like `mkdir /data/hydroxide; sudo chmod 700 /data/hydroxide/; sudo chown -R 1000:1000 /data/hydroxide/`. There are two ways to achieve this. First, you can pass the user id or group id at build time using `--build-arg UID=1000` (optionally you can specify the account name also. Secondly you can specify the user at run time with `--user=hydroxide:1000`. To enable the persisted access token we map in the container to the secured directory on the host machine using `--volume /data/hydroxide:/home/hydroxide/.config/hydroxide` (note that this will be slightly different if you modified the account name). This ensures that the container will retain a copy of any access tokens it has created in the past, as well as prevent accidental or malicious access. Note that if a user with the same user id you are using in the container exists on the hosting system the container will have that account's access.
+
+All up you'll have something like this:
+
+```
+docker run --volume /data/hydroxide:/home/hydroxide/.config/hydroxide \
+  --env USERNAME=myProtonUsername --env PASSWORD=myProtonPassword --env TOKEN=myProtonToken --env DEBUG='' --env INTERPOD='' \
+  --network host --name hydroxide -d --user=$(id -u):$(id -g) \
+  myImageName:myImageTag
+```
 
 ### Running the image (docker-compose)
 
-If you require a `docker-compose` file, see [docker-compose.yml](docker-compose.yml). If you are unfamiliar with docker-compose, here is some code to get you started. Make sure to update the `.env` file with your personal values before your first run.
+If you require a `docker-compose` file, see [docker-compose.yml](docker-compose.yml). You must update the `.env` file with your personal values before your first run. This is time-critical when it comes to 2FA so you may wish to set the token inline with the command using `PROTONMAIL_EXTRA_2FA=12345`. The token should only matter on first run as after that it will have stored some access token.
 
 ```
-# spin container 
-docker-compose stop && docker-compose up -d --build 
-
+# Start up
+docker-compose up -d --build
+# You may remove the --build after you've built the first successful image
+# Spin down
+docker-compose stop
 ```
 
 ### Python test script

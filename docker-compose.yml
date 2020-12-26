@@ -1,40 +1,45 @@
 version: '3.5'
 
 services:
-
   hydroxide:
-    build: hydroxide
+    image: "hydroxide:${HYDROXIDE_VERSION}"
+    container_name: hydroxide
+    build:
       context: .
+      target: runner
       args:
-        HYDROXIDE_VERSION: $HYDROXIDE_VERSION
+        HYDROXIDE_VERSION: "${HYDROXIDE_VERSION}"
+    restart: unless-stopped
     ports:
-      - 1025
-      - 1143
-      - 8080
+      - 1025:1025
+      - 1143:1143
+      - 8080:8080
     environment:
-      USERNAME: $PROTONMAIL_LOGIN
-      PASSWORD: $PROTONMAIL_PASSWORD
-      TOKEN: $PROTONMAIL_EXTRA_2FA
-      DEBUG: $HYDROXIDE_DEBUG
-      INTERPOD: $HYDROXIDE_INTERPOD
+      USERNAME: "${PROTONMAIL_LOGIN}"
+      PASSWORD: "${PROTONMAIL_PASSWORD}"
+      TOKEN: "${PROTONMAIL_EXTRA_2FA}"
+      DEBUG: "${HYDROXIDE_DEBUG}"
+      INTERPOD: "${HYDROXIDE_INTERPOD}"
     volumes:
-     - /root/.config/hydroxide:/root/.config/hydroxide
+      - /data/hydroxide:/home/hydroxide/.config/hydroxide
+    networks:
+      - mail
 
-# add your service here that will integrate with hydroxide
-#
-# ensure it has the following to receive the auth dat:
-#
-#   volumes:
-#    - hydroxide-volume:/path/on/container
-#
-# ensure if has the following to properly link to hydroxide's server address:
-#
-#   links:
-#    - hydroxide
+networks:
+  mail:
+    name: mail
+# add your service that will integrate with hydroxide to this file
+
+# Optional user override. Ensure mounted directory grants access to the container user.
+    # user: 1000:1000
+
+# ensure it has one of the following to properly link the networking to hydroxide's server address:
+    # links:
+      # - hydroxide
+
+  # networks:
+  #     - mail
+
+# If your container has a startup dependency on the Hydroxide daemons you can add this
 #   depends_on:
 #    - hydroxide
-
-volumes:
-  hydroxide-volume:
-
-

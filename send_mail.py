@@ -78,7 +78,7 @@ def accountpass():
 
 	'''
 
-	Returns two variables (account, password) that are stored ini /opt/hydroxide-container/data-hydroxide 
+	Returns two variables (account, password) that are stored in /opt/hydroxide-container/data-hydroxide 
 
 
 	This has to be loaded on each call, as the hydroxide container will change its auth variables on each restart
@@ -89,7 +89,7 @@ def accountpass():
 
 	os.chdir('/opt/hydroxide-container/data-hydroxide')
 
-	with open('info.json') as json_file:
+	with open('auth.json') as json_file:
 		data = json.load(json_file)
 
 	os.chdir(home)
