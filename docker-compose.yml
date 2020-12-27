@@ -15,7 +15,7 @@ services:
       - 1143:1143
       - 8080:8080
     environment:
-      USERNAME: "${PROTONMAIL_LOGIN}"
+      USERNAME: "${PROTONMAIL_LOGON}"
       PASSWORD: "${PROTONMAIL_PASSWORD}"
       TOKEN: "${PROTONMAIL_EXTRA_2FA}"
       DEBUG: "${HYDROXIDE_DEBUG}"
@@ -28,18 +28,23 @@ services:
 networks:
   mail:
     name: mail
+    driver: bridge
+
 # add your service that will integrate with hydroxide to this file
 
-# Optional user override. Ensure mounted directory grants access to the container user.
-    # user: 1000:1000
+# Optional override of user specified in image. Ensure mounted directory grants access to the container user.
+#      user: 1000:1000
 
-# ensure it has one of the following to properly link the networking to hydroxide's server address:
-    # links:
-      # - hydroxide
-
-  # networks:
-  #     - mail
+# ensure it has the following to share networking to be able to access hydroxide
+#    networks:
+#        - mail
 
 # If your container has a startup dependency on the Hydroxide daemons you can add this
-#   depends_on:
-#    - hydroxide
+#    depends_on:
+#      - hydroxide
+
+# Consider explicitly limiting log sizes - particularly if enabling debug logging.
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "3"

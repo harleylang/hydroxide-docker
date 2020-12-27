@@ -1,4 +1,4 @@
-#!/bin/sh -exl
+#!/bin/sh -e
 
 # TODO Consider moving all the TODO to proper issues
 # TODO Consider allowing for non-2FA. Seems really insecure as the full credentials would linger in the container. Then again it's hardly secure anyway there's no access token expiry afaik.
