@@ -34,7 +34,7 @@ FROM alpine:3.9 as runner
 LABEL org.opencontainers.image.title="Docker Hydroxide"
 LABEL org.opencontainers.image.description="Containerised version of Hydroxide, the FOSS alternative to ProtonMail's Bridge application. Authenticates and exposes SMTP, IMAP, and CalDAV interfaces."
 LABEL org.opencontainers.image.version="0.2.17"
-LABEL org.opencontainers.image.authors=""
+LABEL org.opencontainers.image.authors="10679234+arichtman@users.noreply.github.com;Harley Lang"
 LABEL org.opencontainers.image.source="https://github.com/harleylang/hydroxide-docker"
 
 ARG USER=hydroxide
