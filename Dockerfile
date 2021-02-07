@@ -41,7 +41,6 @@ ARG UID=1000
 ARG GID=1000
 
 # Persist storage of the access token generated on authentication
-# TODO Maybe not - this would mean that docker run commands without further qualification would stick the sensitive information in /var/lib/docker/volumes/ somewhere - which may be insecure out of the box. Probably better NOT to declare it here and to enforce a safe location by use of Docker-Compose or more explicit --volume arguments at run time.
 # Looks like it's clashing with my run-time source-destination mapping
 # VOLUME [ "~/.config/hydroxide" ]
 
