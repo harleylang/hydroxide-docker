@@ -1,10 +1,6 @@
 #!/bin/sh -e
 
-# TODO Consider allowing for non-2FA. Seems really insecure as the full credentials would linger in the container. Then again it's hardly secure anyway there's no access token expiry afaik.
-# TODO Better handling of existing but invalid access tokens. For now we blanket use existing as otherwise container restarts would attempt to auth using stale 2FA token and fail. The downside of this is when we have an expired access token we need to manually remove it to trigger retrieval of a new access token.
-
 # If access token does not exist, attempt authentication
-# TODO: Seems to be issues with command line and mounting this file from the host system.
 if [ ! -f ~/.config/hydroxide/auth.json ]; then
 
   if [ $# -ne 2 ] && [ $# -ne 3 ]; then
@@ -30,9 +26,6 @@ if [ ! -f ~/.config/hydroxide/auth.json ]; then
   fi
 
 fi
-
-# TODO Consider clearing the environment variables so logon and password aren't still accessible (logon also persists plain-text in the auth json)
-# TODO Develop some nicer switching mechanism here - environment variables here and in dockerfile is still brittle and esoteric
 
 if [ "${DEBUG}" ]; then
   DBG="-debug"
