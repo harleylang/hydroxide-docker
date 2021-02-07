@@ -26,7 +26,6 @@ RUN wget -c https://github.com/emersion/hydroxide/releases/download/v${HYDROXIDE
 ###### Copy to container
 ################################################%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# TODO Consider authenticating and generating the accesstoken in the build phase? Would still mean baking the access token into the eventual image but would remove the password from ever being present
 
 # Container OS
 FROM alpine:3.9 as runner
