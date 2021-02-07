@@ -17,7 +17,7 @@ FROM golang:1-alpine as builder
 ARG HYDROXIDE_VERSION=0.2.17
 WORKDIR /src
 
-# Build Hydroxide binary, releases preferred for stability, source preferred for compatibility and security
+# Build Hydroxide binary, releases preferred for stability, source compile chosen for compatibility and security
 RUN wget -c https://github.com/emersion/hydroxide/releases/download/v${HYDROXIDE_VERSION}/hydroxide-${HYDROXIDE_VERSION}.tar.gz -qO - | tar -xz --strip 1 \
     && go get -d ./cmd/hydroxide \
     && go build -o hydroxide ./cmd/hydroxide
@@ -39,10 +39,6 @@ LABEL org.opencontainers.image.source="https://github.com/harleylang/hydroxide-d
 ARG USER=hydroxide
 ARG UID=1000
 ARG GID=1000
-
-# Persist storage of the access token generated on authentication
-# Looks like it's clashing with my run-time source-destination mapping
-# VOLUME [ "~/.config/hydroxide" ]
 
 # SMTP IMAP CalDAV
 EXPOSE 1025 1143 8080
