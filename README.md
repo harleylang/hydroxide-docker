@@ -4,92 +4,79 @@ This repository provides an example Dockerfile configuration for [hydroxide](htt
 
 Before submitting issues, please see the [hydroxide](https://github.com/emersion/hydroxide) docs and [Protomail](https://protonmail.com/support/) support pages for hydroxide and Protonmail specific matters.
 
-I offer no guarentees that this is a secure way to store and pass your hydroxide authentication information to other apps. It is one working example to get you started. If can improve the security of this example configuration, please send a pull request. 
+All code samples assume the root of this repository as the starting working directory.
 
-## Data Flow
+No guarantees explicit or implied are made regarding the warranty and security of this solution. It is one working example to get you started. If can improve any aspect of this example configuration, please submit an issue or send a pull request.
 
-In general, these docker-related files automate the Protonmail login process via hydroxide. To do this, your email and password are passed from the docker-related files (via environmental variables) and your authentication data is stroed in `/data/info.json`. 
+## Data storage
 
-```
-info.json {
+In general, these docker-related files automate the Protonmail login process via Hydroxide. To do this, your email and password are passed via environmental variables to the Docker runtime and your authentication data is stored in `~/.config/hydroxide/auth.json` inside the _hydroxide-docker_ volume.
 
-	'user': 'you@yourwebsite.com',
-	'hash': 'yourhyDrOxIdEhaShHerE'
+WARNING: This running container and host file system will be holding your account login details. Access to this operating system should **never** be shared with someone you don't trust.
 
+```JSON
+auth.json {
+  "myProtonLogon" : "base64encodedEncryptedAccessToken"
 }
-
 ```
 
-With the Dockerfile, other files on the host system  can access `info.json` to send emails by querying `/opt/hydroxide-container/data-hydroxide/info.json`.
-
-The `docker-compose` file is setup to share the info.json file via volume sharing.
+With the Dockerfile, other files on the host system  can access `auth.json` to send emails by querying `/opt/hydroxide-container/data-hydroxide/auth.json`. It is suggested that the Docker volume containing the secret rather be mounted to a secured location on the host, and that root and sudo access be limited.
 
 ## Setup
 
 Below are some basic instructions to get you started.
 
-### Dockerfile only
+### Directory prep
 
-If you require a Dockerfile, see the [Dockerfile](/Dockerfile) folder. If you are unfamiliar with Docker, here is some code to get you started.
+This is required for all methods of launching the container.
 
-```
-
+```Bash
 # create folders where your hydroxide log file and auth tokens will live
 mkdir /opt/hydroxide-container
 mkdir /opt/hydroxide-container/data-hydroxide
-
-# navigate to this repo by changing the directory
-cd /directory/path/to/this/repo
-
-# go to the Dockerfile directory
-cd ./hydroxide
-
-# you will need to edit the Dockerfile, here I chose vim as my text editor, use what you prefer
-vim Dockerfile 
-
-# while in vim, uncommment and update HYDROXIDEUSER and HYDROXIDEPASS vars to suit your needs
-# press the 'i' key to enter insert mode, make your changes, and press the 'esc' key when you are done
-# type ':wq' (without brackets) to save your changes and exit 
-
-# build the Dockerfile image
-docker build -t hydroxide .
-
-# run the Dockerfile image
-docker run -it -p 1025:1025 -v /opt/hydroxide-container/data-hydroxide:/data hydroxide
-
+chmod o+rwx /opt/hydroxide-container/data-hydroxide
 ```
 
-### docker-compose
+### Dockerfile only
+
+If you require a Dockerfile, see the [Dockerfile](/hydroxide) folder. If you are unfamiliar with Docker, here is some code to get you started. The `docker-compose` file is setup to share the auth.json file via volume sharing.
+
+```Bash
+# build the Dockerfile image
+docker build -t hydroxide ./hydroxide
+
+# Run interactive/attached
+# Publish all ports
+# Map our created directory
+# Set our environment variables
+# Chose our image
+docker run -it \
+--publish 1025:1025 --publish 1143:1143 --publish 8080:8080 \
+--volume /opt/hydroxide-container/data-hydroxide:/home/hydroxide/.config/hydroxide \
+--env EMAIL=${EMAIL} --env PASSWORD=${PASSWORD} \
+hydroxide
+
+# Clear out any stale credentials
+rm -f /opt/hydroxide-container/data-hydroxide/auth.json
+```
+
+### Docker-compose
 
 If you require a `docker-compose` file, see [docker-compose.yml](docker-compose.yml). If you are unfamiliar with docker-compose, here is some code to get you started.
 
-```
+```Bash
+# Add your account credentials
+vim .env
 
-# navigate to this repo by changing the directory
-cd /directory/path/to/this/repo
-
-# you will need to edit docker-compose.yml, here I chose vim as my text editor, use what you prefer
-vim Dockerfile 
-
-# while in vim, update:
-# (1) HYDROXIDEUSER and HYDROXIDEPASS vars to suit your needs, and
-# (2) add services that you wish to link to the hydroxide server
-# press the 'i' key to enter insert mode, make your changes, and press the 'esc' key when you are done
-# type ':wq' (without brackets) to save your changes and exit 
-
-# spin container 
+# spin container up
 docker-compose stop && docker-compose up -d --build 
-
 ```
 
 ### Python test script
 
 Regardless of whether you use `docker` or `docker-compose`, you can quickly test your setup with python in terminal like so:
 
-```
-
-# navigate to this repo by changing the directory
-cd /directory/path/to/this/repo
+```Bash
 
 # you will need to edit the send_mail.py file, here I chose vim as my text editor, use what you prefer
 vim send_mail.py
@@ -103,6 +90,4 @@ vim send_mail.py
 # fire a test email
 python3 send_mail.py
 
-
 ```
-

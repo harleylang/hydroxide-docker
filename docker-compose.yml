@@ -3,21 +3,22 @@ version: '3.3'
 services:
 
   hydroxide:
-    build: hydroxide
+    build:
+      context: hydroxide
     ports:
-     - 1025:1025
+      - 1025:1025
+      - 1143:1143
+      - 8080:8080
+    container_name: hydroxide
     environment:
-      HYDROXIDEUSER: you@youremail.here
-      HYDROXIDEPASS: yourPasswordHere
+      EMAIL: "${EMAIL}"
+      PASSWORD: "${PASSWORD}"
+      DEBUG: "${DEBUG}"
+      INTERPOD: "${INTERPOD}"
     volumes:
-     - hydroxide-volume:/data
+     - /opt/hydroxide-container/data-hydroxide:/home/hydroxide/.config/hydroxide
 
 # add your service here that will integrate with hydroxide
-#
-# ensure it has the following to receive the auth dat:
-#
-#   volumes:
-#    - hydroxide-volume:/path/on/container
 #
 # ensure if has the following to properly link to hydroxide's server address:
 #
@@ -25,8 +26,3 @@ services:
 #    - hydroxide
 #   depends_on:
 #    - hydroxide
-
-volumes:
-  hydroxide-volume:
-
-
