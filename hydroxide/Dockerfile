@@ -23,9 +23,8 @@ RUN apk --update upgrade \
 ENV GOPATH /go
 
 # build hydroxide
-RUN git -C ./src/ clone https://github.com/emersion/hydroxide/
-RUN go get -d github.com/emersion/hydroxide
-RUN cd /go/src/hydroxide/cmd/hydroxide && go build . && go install . && cd
+RUN git clone https://github.com/emersion/hydroxide.git
+RUN cd hydroxide && go build ./cmd/hydroxide && go install ./cmd/hydroxide
 
 
 ################################################%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
